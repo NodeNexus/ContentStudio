@@ -63,7 +63,7 @@
 // ==========================================
 // SMOOTH SCROLL
 // ==========================================
-function scrollTo(selector) {
+function smoothScrollTo(selector) {
   const el = document.querySelector(selector);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -112,6 +112,32 @@ function scrollTo(selector) {
     btn.addEventListener('click', () => nav.classList.toggle('open'));
     nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
   }
+})();
+
+// ==========================================
+// THEME TOGGLE
+// ==========================================
+(function initTheme() {
+  const btn = document.getElementById('theme-toggle');
+  const icon = btn?.querySelector('.theme-icon');
+  if (!btn) return;
+  const current = localStorage.getItem('cs_theme') || 'dark';
+  if (current === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (icon) icon.textContent = '☀️';
+  }
+  btn.addEventListener('click', () => {
+    const isDark = !document.documentElement.hasAttribute('data-theme');
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('cs_theme', 'light');
+      if (icon) icon.textContent = '☀️';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('cs_theme', 'dark');
+      if (icon) icon.textContent = '🌙';
+    }
+  });
 })();
 
 // ==========================================
@@ -449,7 +475,7 @@ function loadFromHistory(item) {
   document.getElementById('out-raw').textContent = JSON.stringify(item, null, 2);
   updateContentStats(c);
   document.getElementById('results-section').classList.add('active');
-  scrollTo('#results-anchor');
+  smoothScrollTo('#results-anchor');
   showToast('📂 Loaded from history: ' + item.topic, 'info');
 }
 
@@ -529,7 +555,7 @@ async function handleGenerate() {
     resultsSection.classList.add('active');
     saveToHistory(data);
     showToast('✅ Content package generated successfully!', 'success');
-    setTimeout(() => scrollTo('#results-anchor'), 300);
+    setTimeout(() => smoothScrollTo('#results-anchor'), 300);
   } catch (err) {
     stopTimer(); finishPipeline(); clearShimmers();
     const pt = document.querySelector('#pipeline h3');
