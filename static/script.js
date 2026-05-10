@@ -1,575 +1,529 @@
-/* ========================================
-   CONTENT STUDIO — ENHANCED FRONTEND
-   ======================================== */
+const STEPS = ["research", "blog", "social", "email", "video"];
+const AGENT_NAMES = {
+  research: "Research Analyst",
+  blog: "Blog Writer",
+  social: "Social Media Specialist",
+  email: "Email Marketing Expert",
+  video: "Video Scriptwriter",
+};
+const AGENT_LOGS = {
+  research: ["Collecting market and SERP signals", "Extracting audience intent clusters", "Compiling strategic brief"],
+  blog: ["Building SEO-led long form structure", "Generating narrative with authority", "Refining CTA and readability"],
+  social: ["Creating platform-native copy", "Tuning engagement hooks", "Finalizing hashtag and visual cues"],
+  email: ["Drafting high-open subject lines", "Designing campaign sequence", "Polishing conversion copy"],
+  video: ["Writing cinematic opener", "Structuring scene-by-scene script", "Completing outro and hook"],
+};
 
-// ==========================================
-// PARTICLE SYSTEM
-// ==========================================
+let lastResultJSON = null;
+let currentHistory = [];
+let timerInterval = null;
+let lastFocusElement = null;
+
 (function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
+  const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let particles = [];
+  const ctx = canvas.getContext("2d");
+  const particles = [];
   let mouse = { x: -1000, y: -1000 };
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
   resize();
-  window.addEventListener('resize', resize);
-  document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener("resize", resize);
+  window.addEventListener("mousemove", (e) => {
+    mouse = { x: e.clientX, y: e.clientY };
+  });
+
   class Particle {
-    constructor() { this.reset(); }
+    constructor() {
+      this.reset();
+    }
     reset() {
       this.x = Math.random() * canvas.width;
       this.y = Math.random() * canvas.height;
-      this.size = Math.random() * 2 + 0.5;
-      this.speedX = (Math.random() - 0.5) * 0.3;
-      this.speedY = (Math.random() - 0.5) * 0.3;
-      this.opacity = Math.random() * 0.4 + 0.1;
-      const colors = ['139,92,246', '6,182,212', '236,72,153'];
-      this.color = colors[Math.floor(Math.random() * colors.length)];
+      this.vx = (Math.random() - 0.5) * 0.35;
+      this.vy = (Math.random() - 0.5) * 0.35;
+      this.r = Math.random() * 1.8 + 0.8;
+      this.a = Math.random() * 0.4 + 0.1;
     }
     update() {
-      this.x += this.speedX; this.y += this.speedY;
-      const dx = mouse.x - this.x, dy = mouse.y - this.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 150) { this.x -= dx * 0.01; this.y -= dy * 0.01; }
-      if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
-    }
-    draw() {
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.color},${this.opacity})`; ctx.fill();
-    }
-  }
-  for (let i = 0; i < 80; i++) particles.push(new Particle());
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p) => { p.update(); p.draw(); });
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(139,92,246,${0.06 * (1 - dist / 120)})`;
-          ctx.lineWidth = 0.5; ctx.stroke();
-        }
+      this.x += this.vx;
+      this.y += this.vy;
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 150) {
+        this.x -= dx * 0.01;
+        this.y -= dy * 0.01;
+      }
+      if (this.x < -20 || this.x > canvas.width + 20 || this.y < -20 || this.y > canvas.height + 20) {
+        this.reset();
       }
     }
-    requestAnimationFrame(animate);
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(124, 58, 237, ${this.a})`;
+      ctx.fill();
+    }
   }
-  animate();
+
+  for (let i = 0; i < 80; i++) particles.push(new Particle());
+  const render = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.update();
+      p.draw();
+    });
+    requestAnimationFrame(render);
+  };
+  render();
 })();
 
-// ==========================================
-// SMOOTH SCROLL
-// ==========================================
 function smoothScrollTo(selector) {
   const el = document.querySelector(selector);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-// ==========================================
-// SCROLL ANIMATIONS
-// ==========================================
-(function initScrollAnimations() {
-  const observer = new IntersectionObserver(
-    (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-    { threshold: 0.12 }
-  );
-  document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
-})();
-
-// ==========================================
-// ANIMATED COUNTERS
-// ==========================================
 (function initCounters() {
-  const counters = document.querySelectorAll('.stat-number[data-target]');
-  const observer = new IntersectionObserver((entries) => {
+  const counters = document.querySelectorAll(".stat-number[data-target]");
+  const obs = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       const el = entry.target;
-      const target = parseInt(el.dataset.target);
-      let current = 0;
-      const step = Math.max(1, Math.floor(target / 40));
+      const target = parseInt(el.dataset.target, 10);
+      const step = Math.max(1, Math.floor(target / 42));
+      let value = 0;
       const timer = setInterval(() => {
-        current += step;
-        if (current >= target) { current = target; clearInterval(timer); }
-        el.textContent = current;
-      }, 40);
-      observer.unobserve(el);
+        value += step;
+        if (value >= target) {
+          value = target;
+          clearInterval(timer);
+        }
+        el.textContent = value.toLocaleString();
+      }, 24);
+      obs.unobserve(el);
     });
   }, { threshold: 0.5 });
-  counters.forEach((c) => observer.observe(c));
+  counters.forEach((counter) => obs.observe(counter));
 })();
 
-// ==========================================
-// HAMBURGER MENU
-// ==========================================
-(function initHamburger() {
-  const btn = document.getElementById('hamburger');
-  const nav = document.getElementById('nav-links');
-  if (btn && nav) {
-    btn.addEventListener('click', () => nav.classList.toggle('open'));
-    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
-  }
-})();
-
-// ==========================================
-// THEME TOGGLE
-// ==========================================
-(function initTheme() {
-  const btn = document.getElementById('theme-toggle');
-  const icon = btn?.querySelector('.theme-icon');
-  if (!btn) return;
-  const current = localStorage.getItem('cs_theme') || 'dark';
-  if (current === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-    if (icon) icon.textContent = '☀️';
-  }
-  btn.addEventListener('click', () => {
-    const isDark = !document.documentElement.hasAttribute('data-theme');
-    if (isDark) {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('cs_theme', 'light');
-      if (icon) icon.textContent = '☀️';
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('cs_theme', 'dark');
-      if (icon) icon.textContent = '🌙';
-    }
+(function initMobileNav() {
+  const toggle = document.getElementById("nav-toggle");
+  const nav = document.getElementById("primary-nav");
+  if (!toggle || !nav) return;
+  const closeNav = () => {
+    nav.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+  };
+  toggle.addEventListener("click", () => {
+    const isOpen = nav.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
+  nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeNav));
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 760) closeNav();
   });
 })();
 
-// ==========================================
-// CHARACTER COUNTER
-// ==========================================
-(function initCharCounter() {
-  const input = document.getElementById('topic-input');
-  const counter = document.getElementById('char-count');
-  if (input && counter) {
-    input.addEventListener('input', () => { counter.textContent = input.value.length + ' characters'; });
+(function initMicroInteractions() {
+  const cards = document.querySelectorAll(".glass");
+  cards.forEach((card) => {
+    card.addEventListener("mousemove", (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      card.style.setProperty("--mx", `${x}px`);
+      card.style.setProperty("--my", `${y}px`);
+    });
+  });
+  const hero = document.querySelector(".hero-showcase");
+  if (hero) {
+    window.addEventListener("mousemove", (event) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (event.clientX - cx) / cx;
+      const dy = (event.clientY - cy) / cy;
+      hero.style.transform = `perspective(900px) rotateY(${dx * 2}deg) rotateX(${dy * -2}deg)`;
+    });
   }
 })();
 
-// ==========================================
-// TAB SWITCHING
-// ==========================================
-document.getElementById('tabs')?.addEventListener('click', (e) => {
-  if (!e.target.classList.contains('tab-btn')) return;
-  document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
-  e.target.classList.add('active');
-  document.getElementById(e.target.dataset.tab)?.classList.add('active');
-});
+(function initTabs() {
+  const tabs = document.getElementById("tabs");
+  if (!tabs) return;
+  tabs.addEventListener("click", (event) => {
+    const button = event.target.closest(".tab-btn");
+    if (!button) return;
+    document.querySelectorAll(".tab-btn").forEach((item) => item.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach((item) => item.setAttribute("aria-selected", "false"));
+    document.querySelectorAll(".tab-content").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    button.setAttribute("aria-selected", "true");
+    document.getElementById(button.dataset.tab)?.classList.add("active");
+  });
+})();
 
-// ==========================================
-// DEMO QUICK-PICK
-// ==========================================
-const DEMO_TOPICS = {
-  '🤖 AI Agents in Business': 'How AI Agents are Transforming Business Automation in 2026',
-  '🎮 Gaming & Students': 'The Impact of Gaming on Student Life and Academic Performance',
-  '🌱 Sustainable Tech': 'How Green Technology is Reshaping the Future of Computing',
-  '🚀 Future of Remote Work': 'The Evolution of Remote Work: Trends Shaping 2026 and Beyond',
-};
+(function initTopicCounter() {
+  const input = document.getElementById("topic-input");
+  const count = document.getElementById("char-count");
+  if (!input || !count) return;
+  input.addEventListener("input", () => {
+    count.textContent = `${input.value.length} characters`;
+  });
+})();
 
-function pickDemo(btn) {
-  const topic = DEMO_TOPICS[btn.textContent.trim()] || btn.textContent.trim();
-  const input = document.getElementById('topic-input');
-  input.value = topic;
-  input.focus();
-  input.dispatchEvent(new Event('input'));
-  showToast('✨ Demo topic loaded — hit Generate!', 'info');
-}
-
-// ==========================================
-// TOAST NOTIFICATIONS
-// ==========================================
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
+function showToast(message, type = "info") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+  const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-  setTimeout(() => { toast.classList.add('removing'); setTimeout(() => toast.remove(), 300); }, 3500);
+  setTimeout(() => toast.remove(), 3200);
 }
 
-// ==========================================
-// MARKDOWN RENDERER (simple)
-// ==========================================
 function renderMarkdown(text) {
-  if (!text) return '<p style="color:var(--text-muted)">Not generated.</p>';
+  if (!text) return "<p style='color:#a0a3c4'>Not generated for this run.</p>";
   let html = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
-    .replace(/^---$/gm, '<hr>')
-    .replace(/\n{2,}/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-  html = html.replace(/(<li>.*?<\/li>(\s*<br>)*)+/g, (m) => '<ul>' + m.replace(/<br>/g,'') + '</ul>');
-  return '<p>' + html + '</p>';
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
+    .replace(/\n{2,}/g, "</p><p>")
+    .replace(/\n/g, "<br>");
+  html = html.replace(/(<li>.*?<\/li>(<br>)*)+/g, (block) => `<ul>${block.replace(/<br>/g, "")}</ul>`);
+  return `<p>${html}</p>`;
 }
-
-// ==========================================
-// PIPELINE HELPERS
-// ==========================================
-const STEPS = ['research', 'blog', 'social', 'email', 'video'];
-const AGENT_NAMES = { research: 'Analyst', blog: 'Writer', social: 'Social Pro', email: 'Email Expert', video: 'Video Scriptwriter' };
-
-function resetPipeline() {
-  document.querySelectorAll('.ai-node').forEach((n) => n.classList.remove('active', 'done'));
-  const flow = document.getElementById('pipeline-flow');
-  if (flow) flow.style.width = '0%';
-  const feed = document.getElementById('activity-feed');
-  if (feed) feed.innerHTML = '<div class="log-line"><span class="log-time">[System]</span> Neural orchestration layer initialized...</div>';
-}
-
-function activateStep(index) {
-  const node = document.getElementById(`node-${STEPS[index]}`);
-  if (node) node.classList.add('active');
-  const flow = document.getElementById('pipeline-flow');
-  if (flow) flow.style.width = `${(index / (STEPS.length - 1)) * 100}%`;
-}
-
-function completeStep(index) {
-  const node = document.getElementById(`node-${STEPS[index]}`);
-  if (node) { node.classList.remove('active'); node.classList.add('done'); }
-}
-
-// ==========================================
-// ACTIVITY FEED
-// ==========================================
-const AGENT_LOGS = {
-  research: ['Searching for key insights on the topic...','Analyzing trending data and statistics...','Compiling research report with findings...'],
-  blog: ['Crafting SEO-optimized headline...','Writing engaging introduction with hook...','Building out sections with supporting data...'],
-  social: ['Optimizing for LinkedIn professional audience...','Creating witty Twitter/X thread...','Designing Instagram caption with hashtags...'],
-  email: ['Writing subject line for maximum open rate...','Structuring 3-part newsletter series...','Adding compelling calls-to-action...'],
-  video: ['Scripting attention-grabbing hook (0-15s)...','Building narrative arc with visual cues...','Writing outro with engagement prompts...'],
-};
 
 function addLogLine(agent, message) {
-  const feed = document.getElementById('activity-feed');
+  const feed = document.getElementById("activity-feed");
   if (!feed) return;
-  const line = document.createElement('div');
-  line.className = 'log-line';
-  const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  line.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-agent">${agent}:</span> ${message}`;
+  const line = document.createElement("div");
+  line.className = "log-line";
+  line.innerHTML = `<span class="log-time">[${new Date().toLocaleTimeString()}]</span><span class="log-agent">${agent}</span>${message}`;
   feed.appendChild(line);
   feed.scrollTop = feed.scrollHeight;
 }
 
+function addTypingLine(agent) {
+  const feed = document.getElementById("activity-feed");
+  if (!feed) return null;
+  const line = document.createElement("div");
+  line.className = "log-line typing";
+  line.innerHTML = `<span class="log-time">[${new Date().toLocaleTimeString()}]</span><span class="log-agent">${agent}</span>Processing`;
+  feed.appendChild(line);
+  feed.scrollTop = feed.scrollHeight;
+  return line;
+}
+
+function resetPipeline() {
+  document.querySelectorAll(".ai-node").forEach((node) => node.classList.remove("active", "done"));
+  const flow = document.getElementById("pipeline-flow");
+  if (flow) flow.style.width = "0%";
+  const feed = document.getElementById("activity-feed");
+  if (feed) feed.innerHTML = "<div class='log-line'><span class='log-time'>[System]</span> Neural orchestration layer initialized and awaiting prompt.</div>";
+}
+
+function activateStep(index) {
+  const node = document.getElementById(`node-${STEPS[index]}`);
+  node?.classList.add("active");
+  const flow = document.getElementById("pipeline-flow");
+  if (flow) flow.style.width = `${(index / (STEPS.length - 1)) * 84}%`;
+}
+
+function completeStep(index) {
+  const node = document.getElementById(`node-${STEPS[index]}`);
+  if (!node) return;
+  node.classList.remove("active");
+  node.classList.add("done");
+}
+
 async function animatePipeline() {
   for (let i = 0; i < STEPS.length; i++) {
+    const key = STEPS[i];
     activateStep(i);
-    const logs = AGENT_LOGS[STEPS[i]];
-    for (let j = 0; j < logs.length; j++) {
-      addLogLine(AGENT_NAMES[STEPS[i]], logs[j]);
-      await new Promise((r) => setTimeout(r, 800 + Math.random() * 1200));
+    for (const log of AGENT_LOGS[key]) {
+      const typing = addTypingLine(AGENT_NAMES[key]);
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      typing?.remove();
+      addLogLine(AGENT_NAMES[key], log);
+      await new Promise((resolve) => setTimeout(resolve, 600));
     }
-    await new Promise((r) => setTimeout(r, 500));
     completeStep(i);
   }
 }
 
 function finishPipeline() {
-  STEPS.forEach((_, i) => completeStep(i));
-  const flow = document.getElementById('pipeline-flow');
-  if (flow) flow.style.width = '100%';
-  addLogLine('System', 'Pipeline orchestration complete. Output ready.');
+  STEPS.forEach((_, index) => completeStep(index));
+  const flow = document.getElementById("pipeline-flow");
+  if (flow) flow.style.width = "84%";
+  addLogLine("System", "Pipeline completed and output synchronized.");
 }
 
-// ==========================================
-// ELAPSED TIMER
-// ==========================================
-let timerInterval = null;
 function startTimer() {
-  const sec = document.getElementById('elapsed-seconds');
-  const el = document.getElementById('elapsed-timer');
-  if (el) el.classList.add('active');
-  let t = 0; sec.textContent = '0';
-  timerInterval = setInterval(() => { t++; sec.textContent = t; }, 1000);
+  const sec = document.getElementById("elapsed-seconds");
+  if (!sec) return;
+  clearInterval(timerInterval);
+  let t = 0;
+  sec.textContent = "0";
+  timerInterval = setInterval(() => {
+    t += 1;
+    sec.textContent = String(t);
+  }, 1000);
 }
+
 function stopTimer() {
   clearInterval(timerInterval);
-  const el = document.getElementById('elapsed-timer');
-  if (el) el.classList.remove('active');
 }
 
-// ==========================================
-// COPY / DOWNLOAD
-// ==========================================
+function showShimmers() {
+  ["out-blog", "out-social", "out-email", "out-video", "out-research"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "<div class='shimmer-block'></div>".repeat(7);
+  });
+}
+
+function setContentToViewer(content) {
+  document.getElementById("out-blog").innerHTML = renderMarkdown(content.blog);
+  document.getElementById("out-social").innerHTML = renderMarkdown(content.social);
+  document.getElementById("out-email").innerHTML = renderMarkdown(content.email);
+  document.getElementById("out-video").innerHTML = renderMarkdown(content.video);
+  document.getElementById("out-research").innerHTML = renderMarkdown(content.research);
+}
+
+function updateContentStats(content) {
+  const projects = document.getElementById("kpi-projects");
+  const words = document.getElementById("kpi-words");
+  let totalWords = 0;
+  Object.values(content).forEach((value) => {
+    if (value) totalWords += value.split(/\s+/).filter(Boolean).length;
+  });
+  if (projects) projects.textContent = String(currentHistory.length);
+  if (words) words.textContent = totalWords.toLocaleString();
+  const badges = document.getElementById("result-badges");
+  if (badges) badges.innerHTML = `<span class="result-badge">${totalWords.toLocaleString()} words</span><span class="result-badge">5 agent pipeline</span>`;
+}
+
 function getActiveText() {
-  const active = document.querySelector('.tab-content.active');
-  if (!active) return '';
-  const pre = active.querySelector('pre');
-  if (pre) return pre.textContent;
-  const rc = active.querySelector('.rendered-content');
-  return rc ? rc.innerText : '';
+  const active = document.querySelector(".tab-content.active .rendered-content");
+  return active ? active.innerText : "";
 }
 
 function copyActive() {
   const text = getActiveText();
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('btn-copy');
-    const orig = btn.textContent;
-    btn.textContent = '✅ Copied!';
-    showToast('📋 Content copied to clipboard!', 'success');
-    setTimeout(() => (btn.textContent = orig), 2000);
+    showToast("Content copied to clipboard", "success");
   });
 }
 
-let lastResultJSON = null;
+function openExportModal() {
+  const modal = document.getElementById("export-modal");
+  if (!modal) return;
+  lastFocusElement = document.activeElement;
+  modal.classList.remove("hidden");
+  modal.querySelector(".modal-content")?.focus();
+}
+
+function closeExportModal() {
+  const modal = document.getElementById("export-modal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  if (lastFocusElement instanceof HTMLElement) lastFocusElement.focus();
+}
 
 function downloadJSON() {
-  if (!lastResultJSON) return;
-  const blob = new Blob([JSON.stringify(lastResultJSON, null, 2)], { type: 'application/json' });
+  if (!lastResultJSON) return showToast("Generate content first", "error");
+  const blob = new Blob([JSON.stringify(lastResultJSON, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, '_')}.json`;
-  a.click(); URL.revokeObjectURL(url);
-  showToast('📥 JSON downloaded!', 'success');
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, "_")}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function downloadMarkdown() {
-  if (!lastResultJSON) return;
+  if (!lastResultJSON) return showToast("Generate content first", "error");
   const c = lastResultJSON.content || {};
-  let md = `# Content Package: ${lastResultJSON.topic}\n\n`;
-  md += `> Generated: ${new Date(lastResultJSON.generated_at).toLocaleString()}\n`;
-  md += `> Audience: ${lastResultJSON.audience} | Tone: ${lastResultJSON.tone}\n\n---\n\n`;
-  if (c.research) md += `## 🔍 Research\n\n${c.research}\n\n---\n\n`;
-  if (c.blog) md += `## 📝 Blog Post\n\n${c.blog}\n\n---\n\n`;
-  if (c.social) md += `## 📱 Social Media\n\n${c.social}\n\n---\n\n`;
-  if (c.email) md += `## 📧 Email Newsletter\n\n${c.email}\n\n---\n\n`;
-  if (c.video) md += `## 🎥 Video Script\n\n${c.video}\n`;
-  const blob = new Blob([md], { type: 'text/markdown' });
+  let md = `# ${lastResultJSON.topic}\n\n`;
+  md += `Generated: ${new Date(lastResultJSON.generated_at).toLocaleString()}\n`;
+  md += `Audience: ${lastResultJSON.audience}\nTone: ${lastResultJSON.tone}\n\n---\n\n`;
+  if (c.research) md += `## Research\n\n${c.research}\n\n`;
+  if (c.blog) md += `## Blog\n\n${c.blog}\n\n`;
+  if (c.social) md += `## Social\n\n${c.social}\n\n`;
+  if (c.email) md += `## Email\n\n${c.email}\n\n`;
+  if (c.video) md += `## Video\n\n${c.video}\n\n`;
+  const blob = new Blob([md], { type: "text/markdown" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, '_')}.md`;
-  a.click(); URL.revokeObjectURL(url);
-  showToast('📄 Markdown downloaded!', 'success');
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, "_")}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function downloadTXT() {
-  if (!lastResultJSON) return;
+  if (!lastResultJSON) return showToast("Generate content first", "error");
   const c = lastResultJSON.content || {};
-  let txt = `CONTENT PACKAGE: ${lastResultJSON.topic}\n${'='.repeat(50)}\n\n`;
-  txt += `Generated: ${new Date(lastResultJSON.generated_at).toLocaleString()}\n`;
-  txt += `Audience: ${lastResultJSON.audience} | Tone: ${lastResultJSON.tone}\n\n`;
-  if (c.research) txt += `RESEARCH\n${'-'.repeat(30)}\n${c.research}\n\n`;
-  if (c.blog) txt += `BLOG POST\n${'-'.repeat(30)}\n${c.blog}\n\n`;
-  if (c.social) txt += `SOCIAL MEDIA\n${'-'.repeat(30)}\n${c.social}\n\n`;
-  if (c.email) txt += `EMAIL NEWSLETTER\n${'-'.repeat(30)}\n${c.email}\n\n`;
-  if (c.video) txt += `VIDEO SCRIPT\n${'-'.repeat(30)}\n${c.video}\n`;
-  const blob = new Blob([txt], { type: 'text/plain' });
+  let txt = `${lastResultJSON.topic}\n${"-".repeat(60)}\n`;
+  Object.entries(c).forEach(([key, val]) => {
+    if (!val) return;
+    txt += `\n${key.toUpperCase()}\n${val}\n`;
+  });
+  const blob = new Blob([txt], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, '_')}.txt`;
-  a.click(); URL.revokeObjectURL(url);
-  showToast('📃 Text file downloaded!', 'success');
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `content_${lastResultJSON.topic.replace(/\s+/g, "_")}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
-
-// ==========================================
-// SHIMMER PLACEHOLDERS
-// ==========================================
-function showShimmers() {
-  ['out-blog','out-social','out-email','out-video','out-research'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '<div class="shimmer-block"></div>'.repeat(6);
-  });
-  const raw = document.getElementById('out-raw');
-  if (raw) raw.innerHTML = '<div class="shimmer-block"></div>'.repeat(6);
-}
-function clearShimmers() {
-  ['out-blog','out-social','out-email','out-video','out-research','out-raw'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '';
-  });
-}
-
-// ==========================================
-// CONTENT STATS
-// ==========================================
-function updateContentStats(content) {
-  let totalWords = 0, totalChars = 0;
-  Object.values(content).forEach((v) => {
-    if (v) { totalWords += v.split(/\s+/).filter(Boolean).length; totalChars += v.length; }
-  });
-  const readingMin = Math.max(1, Math.ceil(totalWords / 200));
-  const elapsed = document.getElementById('elapsed-seconds')?.textContent || '?';
-  document.getElementById('cs-words').textContent = totalWords.toLocaleString();
-  document.getElementById('cs-chars').textContent = totalChars.toLocaleString();
-  document.getElementById('cs-reading').textContent = readingMin + ' min';
-  const badges = document.getElementById('result-badges');
-  if (badges) {
-    badges.innerHTML = `
-      <span class="result-badge">⏱ Generated in ${elapsed}s</span>
-      <span class="result-badge">📝 ${totalWords.toLocaleString()} words</span>
-    `;
-  }
-}
-
-// ==========================================
-// HISTORY (Database)
-// ==========================================
-let currentHistory = [];
 
 async function fetchAndRenderHistory() {
-  const grid = document.getElementById('history-grid');
-  grid.innerHTML = '<div class="shimmer-block"></div>'.repeat(3);
+  const grid = document.getElementById("history-grid");
+  if (!grid) return;
+  grid.innerHTML = "<div class='glass history-card shimmer-block'></div>".repeat(3);
   try {
-    const res = await fetch('/api/history');
-    if (!res.ok) throw new Error('Failed to load');
+    const res = await fetch("/api/history");
+    if (!res.ok) throw new Error("Unable to load history");
     currentHistory = await res.json();
     renderHistoryCards();
-  } catch (err) {
-    grid.innerHTML = '<p style="color:var(--text-muted)">Failed to load history from database.</p>';
+  } catch (error) {
+    grid.innerHTML = "<p style='color:#b4b6d6'>Failed to load history.</p>";
   }
 }
 
 function renderHistoryCards() {
-  const grid = document.getElementById('history-grid');
-  grid.innerHTML = '';
-  if (currentHistory.length === 0) {
-    grid.innerHTML = `<div class="history-empty" id="history-empty">
-      <span class="history-empty-icon">📭</span>
-      <p>No generations yet. Create your first content package above!</p></div>`;
+  const grid = document.getElementById("history-grid");
+  if (!grid) return;
+  const search = (document.getElementById("history-search")?.value || "").toLowerCase();
+  const filtered = currentHistory.filter((item) => {
+    return `${item.topic} ${item.audience} ${item.tone}`.toLowerCase().includes(search);
+  });
+  grid.innerHTML = "";
+  if (!filtered.length) {
+    grid.innerHTML = "<div class='history-empty glass'><p>No content found yet. Run your first generation.</p></div>";
     return;
   }
-  currentHistory.forEach((item) => {
-    const card = document.createElement('div');
-    card.className = 'history-card';
-    const date = new Date(item.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const types = [];
-    if (item.content?.blog) types.push('📝 Blog');
-    if (item.content?.social) types.push('📱 Social');
-    if (item.content?.email) types.push('📧 Email');
-    if (item.content?.video) types.push('🎥 Video');
-    card.innerHTML = `<h4>${item.topic}</h4>
-      <div class="history-meta"><span>📅 ${date}</span><span>🎯 ${item.audience || 'General'}</span></div>
-      <div class="history-types">${types.map(t => `<span class="history-type-badge">${t}</span>`).join('')}</div>`;
-    card.addEventListener('click', () => loadFromHistory(item));
+  filtered.forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "history-card glass";
+    const date = new Date(item.generated_at).toLocaleString();
+    const badges = [];
+    if (item.content?.blog) badges.push("Blog");
+    if (item.content?.social) badges.push("Social");
+    if (item.content?.email) badges.push("Email");
+    if (item.content?.video) badges.push("Video");
+    card.innerHTML = `
+      <h4>${item.topic}</h4>
+      <div class="history-meta"><span>${date}</span><span>${item.audience || "General"}</span></div>
+      <div class="history-types">${badges.map((b) => `<span class="history-type-badge">${b}</span>`).join("")}</div>
+    `;
+    card.addEventListener("click", () => loadFromHistory(item));
     grid.appendChild(card);
   });
+  const projects = document.getElementById("kpi-projects");
+  if (projects) projects.textContent = String(currentHistory.length);
 }
 
 function loadFromHistory(item) {
   lastResultJSON = item;
-  const c = item.content || {};
-  document.getElementById('out-blog').innerHTML = renderMarkdown(c.blog);
-  document.getElementById('out-social').innerHTML = renderMarkdown(c.social);
-  document.getElementById('out-email').innerHTML = renderMarkdown(c.email);
-  document.getElementById('out-video').innerHTML = renderMarkdown(c.video);
-  document.getElementById('out-research').innerHTML = renderMarkdown(c.research);
-  document.getElementById('out-raw').textContent = JSON.stringify(item, null, 2);
-  updateContentStats(c);
-  document.getElementById('results-section').classList.add('active');
-  smoothScrollTo('#results-anchor');
-  showToast('📂 Loaded from history: ' + item.topic, 'info');
+  setContentToViewer(item.content || {});
+  updateContentStats(item.content || {});
+  smoothScrollTo("#viewer");
+  showToast("Loaded project from history", "success");
 }
 
 async function clearHistory() {
-  if (!confirm('Clear all generation history?')) return;
+  if (!confirm("Clear all generation history?")) return;
   try {
-    await fetch('/api/history', { method: 'DELETE' });
+    await fetch("/api/history", { method: "DELETE" });
     fetchAndRenderHistory();
-    showToast('🗑️ History cleared from database', 'info');
-  } catch (err) {
-    showToast('❌ Failed to clear history', 'error');
+    showToast("History cleared", "success");
+  } catch {
+    showToast("Failed to clear history", "error");
   }
 }
 
-// Init history on load
-fetchAndRenderHistory();
-
-// ==========================================
-// MAIN GENERATE HANDLER
-// ==========================================
 async function handleGenerate() {
-  const topic = document.getElementById('topic-input').value.trim();
+  const topicInput = document.getElementById("topic-input");
+  const topic = topicInput?.value.trim();
   if (!topic) {
-    document.getElementById('topic-input').focus();
-    showToast('⚠️ Please enter a topic first!', 'error');
+    topicInput?.focus();
+    showToast("Enter a topic to generate content", "error");
     return;
   }
 
-  const btn = document.getElementById('btn-generate');
-  const pipeline = document.getElementById('pipeline');
-  const resultsSection = document.getElementById('results-section');
-  const panel = document.getElementById('generator-panel');
-
   const payload = {
     topic,
-    audience: document.getElementById('audience-select').value,
-    tone: document.getElementById('tone-select').value,
-    language: document.getElementById('language-select')?.value || 'English',
-    word_count: parseInt(document.getElementById('word-count-select')?.value || '1500'),
-    include_blog: document.getElementById('chk-blog').checked,
-    include_social: document.getElementById('chk-social').checked,
-    include_email: document.getElementById('chk-email').checked,
-    include_video: document.getElementById('chk-video').checked,
+    audience: document.getElementById("audience-select")?.value || "General Public",
+    tone: document.getElementById("tone-select")?.value || "Professional",
+    include_blog: document.getElementById("chk-blog")?.checked ?? true,
+    include_social: document.getElementById("chk-social")?.checked ?? true,
+    include_email: document.getElementById("chk-email")?.checked ?? true,
+    include_video: document.getElementById("chk-video")?.checked ?? true,
   };
 
-  btn.classList.add('loading'); btn.disabled = true;
-  btn.textContent = 'Orchestrating Agents...';
-  
-  const resultsPanel = document.getElementById('results-panel');
-  if (resultsPanel) {
-    resultsPanel.style.display = 'none';
-    resultsPanel.classList.remove('active');
+  const button = document.getElementById("btn-generate");
+  const original = button?.innerHTML || "Generate Content Package";
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = "<span>Orchestrating Agents...</span>";
   }
-
   resetPipeline();
   showShimmers();
-  showToast('🚀 Agents are generating your content...', 'info');
   startTimer();
-
-  const pipelinePromise = animatePipeline();
+  const animation = animatePipeline();
 
   try {
-    const response = await fetch('/api/generate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Generation failed');
-
-    await pipelinePromise;
-    stopTimer(); finishPipeline(); clearShimmers();
+    if (!response.ok) throw new Error(data.error || "Generation failed");
+    await animation;
+    finishPipeline();
+    stopTimer();
     lastResultJSON = data;
-
-    const c = data.content || {};
-    document.getElementById('out-blog').innerHTML = renderMarkdown(c.blog);
-    document.getElementById('out-social').innerHTML = renderMarkdown(c.social);
-    document.getElementById('out-email').innerHTML = renderMarkdown(c.email);
-    document.getElementById('out-video').innerHTML = renderMarkdown(c.video);
-    document.getElementById('out-research').innerHTML = renderMarkdown(c.research);
-    document.getElementById('out-raw').textContent = JSON.stringify(data, null, 2);
-
-    updateContentStats(c);
-    resultsPanel.style.display = 'block';
-    resultsPanel.classList.add('active');
-    fetchAndRenderHistory(); 
-    showToast('✅ Content package generated successfully!', 'success');
-    setTimeout(() => smoothScrollTo('#results-panel'), 300);
-  } catch (err) {
-    finishPipeline(); clearShimmers();
-    addLogLine('Error', err.message);
-    showToast('❌ ' + err.message, 'error');
+    setContentToViewer(data.content || {});
+    updateContentStats(data.content || {});
+    fetchAndRenderHistory();
+    smoothScrollTo("#viewer");
+    showToast("Content package generated successfully", "success");
+  } catch (error) {
+    stopTimer();
+    addLogLine("Error", error.message);
+    showToast(error.message, "error");
   } finally {
-    btn.classList.remove('loading'); btn.disabled = false;
-    btn.textContent = 'Generate Content Package';
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = original;
+    }
   }
 }
 
-// ==========================================
-// KEYBOARD SHORTCUT (Ctrl+Enter)
-// ==========================================
-document.getElementById('topic-input')?.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); handleGenerate(); }
+document.getElementById("topic-input")?.addEventListener("keydown", (event) => {
+  if (event.ctrlKey && event.key === "Enter") {
+    event.preventDefault();
+    handleGenerate();
+  }
 });
+
+document.getElementById("history-search")?.addEventListener("input", renderHistoryCards);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeExportModal();
+});
+
+fetchAndRenderHistory();

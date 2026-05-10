@@ -2,165 +2,302 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Content Studio | AI Marketing Automation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Studio | Autonomous AI Marketing Team</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <!-- Ambient Background -->
+  <canvas id="particle-canvas"></canvas>
   <div class="ambient-bg">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
   </div>
 
-  <!-- Navbar -->
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-        <span style="color:var(--accent-primary)">✦</span> ContentStudio
-      </div>
-      <div class="nav-links">
-        <span style="color:var(--text-muted); font-size: 0.85rem; background:rgba(255,255,255,0.05); padding:0.2rem 0.6rem; border-radius:100px;">User: {{ username }}</span>
-        <a href="#workspace">Workspace</a>
-        <a href="#history">History</a>
-        <a href="/logout" class="btn-nav">Sign Out</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <section class="hero fade-up">
-    <div class="hero-badge">⚡ Powered by CrewAI & Llama-3</div>
-    <h1>Your Autonomous <span class="gradient-text-accent">AI Marketing</span> Team</h1>
-    <p>Simulate an entire digital marketing agency. Generate heavily researched, platform-specific content packages in minutes using agentic AI orchestration.</p>
-    <button class="btn-primary" onclick="document.getElementById('workspace').scrollIntoView({behavior:'smooth'})">Launch Workspace</button>
-  </section>
-
-  <!-- Workspace -->
-  <section id="workspace" class="workspace fade-up delay-1">
-    <!-- Left: Controls -->
-    <div class="glass-panel">
-      <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display); font-size:1.4rem;">Project Setup</h3>
-      
-      <div class="input-group">
-        <label>Topic / Prompt</label>
-        <textarea id="topic-input" class="premium-input" rows="4" placeholder="e.g. The impact of quantum computing on modern cryptography..." style="resize:vertical; line-height:1.5;"></textarea>
-      </div>
-      
-      <div class="input-group">
-        <label>Target Audience</label>
-        <select id="audience-select" class="premium-select">
-          <option>General Public</option>
-          <option>Software Engineers</option>
-          <option>C-Suite Executives</option>
-          <option>Students</option>
-          <option>Founders</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Brand Tone</label>
-        <select id="tone-select" class="premium-select">
-          <option>Professional & Authoritative</option>
-          <option>Casual & Witty</option>
-          <option>Persuasive & Sales-driven</option>
-          <option>Academic & Analytical</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Deliverables</label>
-        <div class="checkbox-grid">
-          <label class="checkbox-label"><input type="checkbox" id="chk-blog" checked> Blog Post</label>
-          <label class="checkbox-label"><input type="checkbox" id="chk-social" checked> Social Media</label>
-          <label class="checkbox-label"><input type="checkbox" id="chk-email" checked> Newsletter</label>
-          <label class="checkbox-label"><input type="checkbox" id="chk-video" checked> Video Script</label>
-        </div>
-      </div>
-
-      <button id="btn-generate" class="btn-primary" style="width:100%; margin-top:1rem;" onclick="handleGenerate()">
-        Generate Content Package
+  <header class="top-nav glass">
+    <div class="container nav-inner">
+      <a href="#landing" class="brand">
+        <span class="brand-dot">✦</span>
+        <span>Content Studio</span>
+      </a>
+      <button type="button" id="nav-toggle" class="btn btn-ghost nav-toggle" aria-expanded="false" aria-controls="primary-nav">
+        Menu
       </button>
+      <nav id="primary-nav" class="nav-links" aria-label="Primary">
+        <a href="#landing">Home</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#workspace">Workspace</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#history">History</a>
+        <a href="#settings">Settings</a>
+      </nav>
+      <div class="nav-actions">
+        <span class="user-pill">{{ username }}</span>
+        <a class="btn btn-ghost" href="/logout">Sign Out</a>
+      </div>
     </div>
+  </header>
 
-    <!-- Right: Pipeline & Output -->
-    <div class="workspace-output">
-      
-      <!-- Pipeline Visualizer -->
-      <div class="pipeline-viz" id="pipeline-viz">
-        <div style="font-family:var(--font-display); font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:-0.5rem;">Neural Pipeline Status</div>
-        <div class="connection-line">
-          <div class="connection-flow" id="pipeline-flow"></div>
-        </div>
-        <div class="node-row">
-          <div class="ai-node" id="node-research">
-            <span class="node-icon">🔍</span>
-            <span class="node-name">Analyst</span>
+  <main>
+    <section id="landing" class="landing section">
+      <div class="container hero-grid">
+        <div class="hero-content fade-up">
+          <span class="badge">Powered by CrewAI orchestration</span>
+          <h1>Your Autonomous AI Marketing Team</h1>
+          <p>Launch a multi-agent pipeline that researches, writes, and delivers complete campaign-ready content in one intelligent workflow.</p>
+          <div class="hero-cta">
+            <a href="#workspace" class="btn btn-primary">Start Generating</a>
+            <a href="#pipeline" class="btn btn-ghost">Watch Pipeline</a>
           </div>
-          <div class="ai-node" id="node-blog">
-            <span class="node-icon">📝</span>
-            <span class="node-name">Writer</span>
-          </div>
-          <div class="ai-node" id="node-social">
-            <span class="node-icon">📱</span>
-            <span class="node-name">Social</span>
-          </div>
-          <div class="ai-node" id="node-email">
-            <span class="node-icon">📧</span>
-            <span class="node-name">Email</span>
-          </div>
-          <div class="ai-node" id="node-video">
-            <span class="node-icon">🎥</span>
-            <span class="node-name">Video</span>
+          <div class="hero-stats">
+            <div class="stat glass"><strong class="stat-number" data-target="5">0</strong><span>Specialist Agents</span></div>
+            <div class="stat glass"><strong class="stat-number" data-target="92">0</strong><span>Avg. Workflow Score</span></div>
+            <div class="stat glass"><strong class="stat-number" data-target="3200">0</strong><span>Content Projects</span></div>
           </div>
         </div>
-        
-        <div class="terminal-output" id="activity-feed">
-          <div class="log-line"><span class="log-time">[System]</span> Neural orchestration layer initialized and awaiting prompt...</div>
+        <div class="hero-showcase glass fade-up delay-1">
+          <div class="showcase-title">Live AI Workflow</div>
+          <div class="showcase-step"><span>Research Analyst</span><span class="status live">Thinking</span></div>
+          <div class="showcase-step"><span>Blog Writer</span><span class="status idle">Queued</span></div>
+          <div class="showcase-step"><span>Social Specialist</span><span class="status idle">Queued</span></div>
+          <div class="showcase-step"><span>Email Expert</span><span class="status idle">Queued</span></div>
+          <div class="showcase-step"><span>Video Scriptwriter</span><span class="status idle">Queued</span></div>
+          <div class="workflow-line"><span></span></div>
         </div>
       </div>
+    </section>
 
-      <!-- Output Rendered -->
-      <div class="glass-panel" id="results-panel" style="display:none; min-height: 400px; animation: fadeUp 0.5s ease;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:1rem; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
-          <div class="tabs" id="tabs">
-            <button class="tab-btn active" data-tab="tab-blog">📝 Blog</button>
-            <button class="tab-btn" data-tab="tab-social">📱 Social</button>
-            <button class="tab-btn" data-tab="tab-email">📧 Email</button>
-            <button class="tab-btn" data-tab="tab-video">🎥 Video</button>
-            <button class="tab-btn" data-tab="tab-research">🔍 Research</button>
+    <section class="section showcase">
+      <div class="container">
+        <div class="section-head">
+          <h2>Startup-Grade Marketing Operating System</h2>
+          <p>Built for founders, marketing teams, agencies, and AI-first creators.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card glass fade-up"><h3>Real-Time Collaboration</h3><p>See each AI specialist think, write, and pass context in sequence with live status updates.</p></article>
+          <article class="feature-card glass fade-up delay-1"><h3>Content Package Output</h3><p>Generate blog posts, social copies, emails, and video scripts from one brief.</p></article>
+          <article class="feature-card glass fade-up delay-2"><h3>Export & Versioning</h3><p>Export markdown, JSON, and TXT while preserving your full generation history.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="section dashboard">
+      <div class="container app-shell">
+        <aside class="sidebar glass">
+          <h3>Mission Control</h3>
+          <a href="#dashboard" class="side-link active">Overview</a>
+          <a href="#workspace" class="side-link">Generation Workspace</a>
+          <a href="#pipeline" class="side-link">Pipeline Visualizer</a>
+          <a href="#viewer" class="side-link">Content Viewer</a>
+          <a href="#history" class="side-link">History</a>
+          <a href="#settings" class="side-link">Settings</a>
+        </aside>
+        <div class="dashboard-main">
+          <div class="dashboard-top glass">
+            <div>
+              <h2>Welcome back, {{ username }}</h2>
+              <p>Orchestrate campaigns and monitor agent intelligence in one place.</p>
+            </div>
+            <div class="top-actions">
+              <input id="history-search" class="input" type="search" placeholder="Search projects and topics">
+              <button type="button" class="btn btn-primary" onclick="smoothScrollTo('#workspace')">New Project</button>
+            </div>
           </div>
-          <div class="export-row" style="margin-top:0;">
-            <button class="btn-export" onclick="copyActive()">Copy</button>
-            <button class="btn-export" onclick="downloadMarkdown()">Download .MD</button>
-            <button class="btn-export" onclick="downloadJSON()">Raw JSON</button>
+          <div class="kpi-grid">
+            <article class="kpi-card glass"><span>Projects Generated</span><strong id="kpi-projects">0</strong></article>
+            <article class="kpi-card glass"><span>Words Produced</span><strong id="kpi-words">0</strong></article>
+            <article class="kpi-card glass"><span>Active Agents</span><strong>5</strong></article>
+            <article class="kpi-card glass"><span>Pipeline Health</span><strong class="healthy">99.9%</strong></article>
+          </div>
+          <div class="widget-grid">
+            <article class="glass widget">
+              <h3>Usage Analytics</h3>
+              <div class="chart-bars">
+                <span style="height:45%"></span><span style="height:70%"></span><span style="height:52%"></span>
+                <span style="height:82%"></span><span style="height:64%"></span><span style="height:90%"></span>
+              </div>
+            </article>
+            <article class="glass widget">
+              <h3>Agent Status</h3>
+              <ul class="agent-list">
+                <li><span>Research Analyst</span><em class="status live">Live</em></li>
+                <li><span>Blog Writer</span><em class="status idle">Ready</em></li>
+                <li><span>Social Specialist</span><em class="status idle">Ready</em></li>
+                <li><span>Email Expert</span><em class="status idle">Ready</em></li>
+                <li><span>Video Scriptwriter</span><em class="status idle">Ready</em></li>
+              </ul>
+            </article>
           </div>
         </div>
-        
-        <div class="tab-content active" id="tab-blog"><div class="rendered-content" id="out-blog"></div></div>
-        <div class="tab-content" id="tab-social"><div class="rendered-content" id="out-social"></div></div>
-        <div class="tab-content" id="tab-email"><div class="rendered-content" id="out-email"></div></div>
-        <div class="tab-content" id="tab-video"><div class="rendered-content" id="out-video"></div></div>
-        <div class="tab-content" id="tab-research"><div class="rendered-content" id="out-research"></div></div>
       </div>
+    </section>
 
-    </div>
-  </section>
+    <section id="workspace" class="section workspace">
+      <div class="container split">
+        <article class="glass control-panel">
+          <h2>Content Generation Workspace</h2>
+          <p>Define topic, audience, and tone. Then orchestrate the full AI team.</p>
+          <div class="field-group">
+            <label for="topic-input">Topic / Prompt</label>
+            <textarea id="topic-input" class="input input-area" rows="5" placeholder="e.g. The impact of quantum computing on enterprise cybersecurity"></textarea>
+            <small id="char-count">0 characters</small>
+          </div>
+          <div class="form-row">
+            <div class="field-group">
+              <label for="audience-select">Target Audience</label>
+              <select id="audience-select" class="input">
+                <option>General Public</option>
+                <option>Startup Founders</option>
+                <option>Marketing Teams</option>
+                <option>Developers</option>
+                <option>Enterprise Leaders</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="tone-select">Tone</label>
+              <select id="tone-select" class="input">
+                <option>Professional & Authoritative</option>
+                <option>Bold & Visionary</option>
+                <option>Casual & Conversational</option>
+                <option>Persuasive & Conversion-focused</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Deliverables</label>
+            <div class="check-grid">
+              <label class="check-card"><input type="checkbox" id="chk-blog" checked><span>Blog Post</span></label>
+              <label class="check-card"><input type="checkbox" id="chk-social" checked><span>Social Media</span></label>
+              <label class="check-card"><input type="checkbox" id="chk-email" checked><span>Email Campaign</span></label>
+              <label class="check-card"><input type="checkbox" id="chk-video" checked><span>Video Script</span></label>
+            </div>
+          </div>
+          <button type="button" id="btn-generate" class="btn btn-primary btn-generate" onclick="handleGenerate()">
+            <span>Generate Content Package</span>
+          </button>
+          <div id="elapsed-timer" class="timer-pill">Elapsed: <strong id="elapsed-seconds">0</strong>s</div>
+        </article>
 
-  <!-- History Section -->
-  <section id="history" class="history-section fade-up delay-2">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-      <h2 style="font-family:var(--font-display); font-size:1.8rem;">Content History</h2>
-      <button class="btn-export" onclick="clearHistory()" style="color:#ef4444; border-color:rgba(239,68,68,0.3)">Clear Database</button>
-    </div>
-    <div class="history-grid" id="history-grid">
-      <!-- Injected via JS -->
-    </div>
-  </section>
+        <div class="preview-column">
+          <article id="pipeline" class="glass pipeline-viz">
+            <div class="section-inline-head">
+              <h3>AI Pipeline Visualizer</h3>
+              <span class="badge">Real-time orchestration</span>
+            </div>
+            <div class="pipeline-network">
+              <div class="line-base"></div>
+              <div class="line-flow" id="pipeline-flow"></div>
+              <div class="node-row">
+                <div class="ai-node" id="node-research"><span>Research</span><small>Analyst</small></div>
+                <div class="ai-node" id="node-blog"><span>Blog</span><small>Writer</small></div>
+                <div class="ai-node" id="node-social"><span>Social</span><small>Specialist</small></div>
+                <div class="ai-node" id="node-email"><span>Email</span><small>Expert</small></div>
+                <div class="ai-node" id="node-video"><span>Video</span><small>Scriptwriter</small></div>
+              </div>
+            </div>
+            <div id="activity-feed" class="activity-feed">
+              <div class="log-line"><span class="log-time">[System]</span> Neural orchestration layer initialized and awaiting prompt.</div>
+            </div>
+          </article>
 
-  <!-- Toast Container -->
+          <article id="viewer" class="glass viewer-card">
+            <div class="viewer-head">
+              <h3>Generated Content Viewer</h3>
+              <div class="viewer-actions">
+                <button type="button" id="btn-copy" class="btn btn-ghost" onclick="copyActive()">Copy</button>
+                <button type="button" class="btn btn-ghost" onclick="openExportModal()">Export</button>
+              </div>
+            </div>
+            <div id="result-badges" class="result-badges"></div>
+            <div id="results-panel">
+              <div class="tabs" id="tabs" role="tablist" aria-label="Generated content tabs">
+                <button type="button" role="tab" aria-selected="true" class="tab-btn active" data-tab="tab-blog">Blog</button>
+                <button type="button" role="tab" aria-selected="false" class="tab-btn" data-tab="tab-social">Social</button>
+                <button type="button" role="tab" aria-selected="false" class="tab-btn" data-tab="tab-email">Email</button>
+                <button type="button" role="tab" aria-selected="false" class="tab-btn" data-tab="tab-video">Video</button>
+                <button type="button" role="tab" aria-selected="false" class="tab-btn" data-tab="tab-research">Research</button>
+              </div>
+              <div class="tab-content active" id="tab-blog" role="tabpanel"><div class="rendered-content" id="out-blog"></div></div>
+              <div class="tab-content" id="tab-social" role="tabpanel"><div class="rendered-content" id="out-social"></div></div>
+              <div class="tab-content" id="tab-email" role="tabpanel"><div class="rendered-content" id="out-email"></div></div>
+              <div class="tab-content" id="tab-video" role="tabpanel"><div class="rendered-content" id="out-video"></div></div>
+              <div class="tab-content" id="tab-research" role="tabpanel"><div class="rendered-content" id="out-research"></div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="history" class="section history">
+      <div class="container">
+        <div class="section-inline-head">
+          <h2>Content History</h2>
+          <button type="button" class="btn btn-ghost danger" onclick="clearHistory()">Clear History</button>
+        </div>
+        <div id="history-grid" class="history-grid"></div>
+      </div>
+    </section>
+
+    <section id="settings" class="section settings">
+      <div class="container settings-grid">
+        <article class="glass setting-card">
+          <h3>Profile</h3>
+          <p>Signed in as <strong>{{ username }}</strong></p>
+          <p class="muted">Manage your workspace identity and personalization.</p>
+        </article>
+        <article class="glass setting-card">
+          <h3>Generation Defaults</h3>
+          <p>Audience, tone, and deliverables can be preconfigured for recurring workflows.</p>
+          <p class="muted">Current mode: adaptive and multi-agent.</p>
+        </article>
+        <article class="glass setting-card">
+          <h3>Export Preferences</h3>
+          <p>Choose between Markdown, JSON, and TXT for each project delivery.</p>
+          <button type="button" class="btn btn-ghost" onclick="openExportModal()">Open Export Modal</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="section pricing">
+      <div class="container">
+        <div class="section-head"><h2>Built for Product Hunt launch velocity</h2></div>
+        <div class="pricing-grid">
+          <article class="glass pricing-card"><h3>Starter</h3><p>For solo founders</p><strong>$19/mo</strong></article>
+          <article class="glass pricing-card featured"><h3>Growth</h3><p>For modern teams</p><strong>$79/mo</strong></article>
+          <article class="glass pricing-card"><h3>Scale</h3><p>For agencies and enterprises</p><strong>$199/mo</strong></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <h4>Content Studio</h4>
+        <p>Your AI-native marketing operating system.</p>
+      </div>
+      <p>2026 Content Studio. Built for autonomous growth.</p>
+    </div>
+  </footer>
+
+  <div id="export-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+    <div class="modal-backdrop" onclick="closeExportModal()"></div>
+    <div class="modal-content glass" tabindex="-1">
+      <h3 id="export-modal-title">Export Content Package</h3>
+      <p>Choose your format and deliver instantly.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" onclick="downloadMarkdown()">Markdown</button>
+        <button type="button" class="btn btn-ghost" onclick="downloadJSON()">JSON</button>
+        <button type="button" class="btn btn-ghost" onclick="downloadTXT()">TXT</button>
+      </div>
+      <button type="button" class="btn btn-ghost full" onclick="closeExportModal()">Close</button>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
-
   <script src="/static/script.js"></script>
 </body>
 </html>
