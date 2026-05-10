@@ -1,391 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Content Studio — AI-Powered Multi-Agent Content Generation</title>
-  <meta name="description" content="Multi-Agent Content Studio: 5 AI agents collaborate to generate blog posts, social media, email newsletters, and video scripts from a single topic." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🎬</text></svg>" />
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8">
+  <title>Content Studio | AI Marketing Automation</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
 
-  <!-- Particle Background -->
-  <canvas id="particle-canvas"></canvas>
-
-  <!-- Toast Container -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- ============ NAVBAR ============ -->
-  <nav class="navbar" id="navbar">
-    <div class="container">
-      <div class="nav-logo">
-        <span class="logo-icon">🎬</span>
-        Content Studio
+  <!-- Navbar -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <span style="color:var(--accent-primary)">✦</span> ContentStudio
       </div>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#how">How It Works</a></li>
-        <li><a href="#agents">Agents</a></li>
-        <li><a href="#generate">Generate</a></li>
-        <li><a href="#history">History</a></li>
-      </ul>
-      <div class="nav-right">
-        <span style="font-size:0.85rem; color:var(--text-secondary); margin-right:15px;">Hi, {{ username }}</span>
-        <a href="/logout" class="btn-icon" style="text-decoration:none; margin-right:10px; font-size: 0.9rem;">Logout</a>
-        <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle dark/light theme">
-          <span class="theme-icon">🌙</span>
-        </button>
-        <button class="nav-cta" onclick="smoothScrollTo('#generate')">Get Started</button>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
-        </button>
+      <div class="nav-links">
+        <span style="color:var(--text-muted); font-size: 0.85rem; background:rgba(255,255,255,0.05); padding:0.2rem 0.6rem; border-radius:100px;">User: {{ username }}</span>
+        <a href="#workspace">Workspace</a>
+        <a href="#history">History</a>
+        <a href="/logout" class="btn-nav">Sign Out</a>
       </div>
     </div>
   </nav>
 
-  <!-- ============ HERO ============ -->
-  <section class="hero" id="hero">
-    <div class="container">
-      <div class="hero-content fade-up">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          Powered by CrewAI &amp; Groq
-        </div>
-        <h1>
-          Multi-Agent<br />
-          <span class="gradient-text">Content Studio</span>
-        </h1>
-        <p>
-          Five AI agents collaborate in real time to generate a complete content package — blog post, social media, email newsletter, and video script — all from a single topic.
-        </p>
-        <div class="hero-buttons">
-          <button class="btn-primary" onclick="smoothScrollTo('#generate')">✨ Start Generating</button>
-          <button class="btn-secondary" onclick="smoothScrollTo('#how')">How It Works</button>
-        </div>
-      </div>
-    </div>
+  <!-- Hero -->
+  <section class="hero fade-up">
+    <div class="hero-badge">⚡ Powered by CrewAI & Llama-3</div>
+    <h1>Your Autonomous <span class="gradient-text-accent">AI Marketing</span> Team</h1>
+    <p>Simulate an entire digital marketing agency. Generate heavily researched, platform-specific content packages in minutes using agentic AI orchestration.</p>
+    <button class="btn-primary" onclick="document.getElementById('workspace').scrollIntoView({behavior:'smooth'})">Launch Workspace</button>
   </section>
 
-  <!-- ============ STATS BAR ============ -->
-  <section class="stats-bar">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-item fade-up">
-          <div class="stat-number" data-target="5">0</div>
-          <div class="stat-label">AI Agents</div>
-        </div>
-        <div class="stat-item fade-up">
-          <div class="stat-number" data-target="4">0</div>
-          <div class="stat-label">Content Types</div>
-        </div>
-        <div class="stat-item fade-up">
-          <div class="stat-number" data-target="1">0</div>
-          <div class="stat-label">Click to Generate</div>
-        </div>
-        <div class="stat-item fade-up">
-          <div class="stat-number" data-target="100">0</div>
-          <div class="stat-label">% Automated</div>
+  <!-- Workspace -->
+  <section id="workspace" class="workspace fade-up delay-1">
+    <!-- Left: Controls -->
+    <div class="glass-panel">
+      <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display); font-size:1.4rem;">Project Setup</h3>
+      
+      <div class="input-group">
+        <label>Topic / Prompt</label>
+        <textarea id="topic-input" class="premium-input" rows="4" placeholder="e.g. The impact of quantum computing on modern cryptography..." style="resize:vertical; line-height:1.5;"></textarea>
+      </div>
+      
+      <div class="input-group">
+        <label>Target Audience</label>
+        <select id="audience-select" class="premium-select">
+          <option>General Public</option>
+          <option>Software Engineers</option>
+          <option>C-Suite Executives</option>
+          <option>Students</option>
+          <option>Founders</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Brand Tone</label>
+        <select id="tone-select" class="premium-select">
+          <option>Professional & Authoritative</option>
+          <option>Casual & Witty</option>
+          <option>Persuasive & Sales-driven</option>
+          <option>Academic & Analytical</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Deliverables</label>
+        <div class="checkbox-grid">
+          <label class="checkbox-label"><input type="checkbox" id="chk-blog" checked> Blog Post</label>
+          <label class="checkbox-label"><input type="checkbox" id="chk-social" checked> Social Media</label>
+          <label class="checkbox-label"><input type="checkbox" id="chk-email" checked> Newsletter</label>
+          <label class="checkbox-label"><input type="checkbox" id="chk-video" checked> Video Script</label>
         </div>
       </div>
+
+      <button id="btn-generate" class="btn-primary" style="width:100%; margin-top:1rem;" onclick="handleGenerate()">
+        Generate Content Package
+      </button>
     </div>
-  </section>
 
-  <!-- ============ HOW IT WORKS ============ -->
-  <section class="section how-section" id="how">
-    <div class="container">
-      <div class="section-header fade-up">
-        <h2>How It Works</h2>
-        <p>Three simple steps from topic to a complete content package.</p>
-      </div>
-      <div class="how-grid">
-        <div class="how-card fade-up">
-          <div class="how-number">1</div>
-          <h3>Enter a Topic</h3>
-          <p>Type any topic or pick a demo suggestion. Choose your audience and tone.</p>
+    <!-- Right: Pipeline & Output -->
+    <div class="workspace-output">
+      
+      <!-- Pipeline Visualizer -->
+      <div class="pipeline-viz" id="pipeline-viz">
+        <div style="font-family:var(--font-display); font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:-0.5rem;">Neural Pipeline Status</div>
+        <div class="connection-line">
+          <div class="connection-flow" id="pipeline-flow"></div>
         </div>
-        <div class="how-card fade-up">
-          <div class="how-number">2</div>
-          <h3>Agents Collaborate</h3>
-          <p>Five specialized AI agents research, write, and refine your content in real time.</p>
-        </div>
-        <div class="how-card fade-up">
-          <div class="how-number">3</div>
-          <h3>Get Your Package</h3>
-          <p>Blog post, social media, email series, and video script — ready to copy or download.</p>
-        </div>
-        <span class="how-arrow how-arrow-1">→</span>
-        <span class="how-arrow how-arrow-2">→</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ AGENTS ============ -->
-  <section class="section agents-section" id="agents">
-    <div class="container">
-      <div class="section-header fade-up">
-        <h2>Meet Your AI Agents</h2>
-        <p>Five specialized agents work together, each bringing unique expertise to your content.</p>
-      </div>
-      <div class="agents-grid">
-        <div class="agent-card fade-up" data-agent="research">
-          <div class="agent-status"></div>
-          <div class="agent-icon">🔍</div>
-          <h3>Research Analyst</h3>
-          <p>Digs deep into topics to surface key insights, statistics, and compelling angles.</p>
-        </div>
-        <div class="agent-card fade-up" data-agent="blog">
-          <div class="agent-status"></div>
-          <div class="agent-icon">✍️</div>
-          <h3>Blog Writer</h3>
-          <p>Crafts SEO-optimized, engaging blog posts that inform and captivate readers.</p>
-        </div>
-        <div class="agent-card fade-up" data-agent="social">
-          <div class="agent-status"></div>
-          <div class="agent-icon">📱</div>
-          <h3>Social Media Pro</h3>
-          <p>Creates platform-specific posts for LinkedIn, Twitter, Instagram &amp; TikTok.</p>
-        </div>
-        <div class="agent-card fade-up" data-agent="email">
-          <div class="agent-status"></div>
-          <div class="agent-icon">📧</div>
-          <h3>Email Marketer</h3>
-          <p>Writes compelling newsletter series with subject lines that convert.</p>
-        </div>
-        <div class="agent-card fade-up" data-agent="video">
-          <div class="agent-status"></div>
-          <div class="agent-icon">🎥</div>
-          <h3>Video Scriptwriter</h3>
-          <p>Scripts engaging YouTube videos with hooks, pacing &amp; visual cues.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ GENERATOR ============ -->
-  <section class="section generator-section" id="generate">
-    <div class="container">
-      <div class="section-header fade-up">
-        <h2>Generate Your Content</h2>
-        <p>Enter a topic and let the agents do the rest. Press <kbd>Ctrl+Enter</kbd> to generate.</p>
-      </div>
-
-      <div class="generator-panel fade-up" id="generator-panel">
-        <form id="generator-form" onsubmit="return false;">
-          <div class="gen-grid">
-            <div>
-              <div class="form-group">
-                <label for="topic-input">Topic</label>
-                <div class="demo-picks">
-                  <button class="demo-pick" type="button" onclick="pickDemo(this)">🤖 AI Agents in Business</button>
-                  <button class="demo-pick" type="button" onclick="pickDemo(this)">🎮 Gaming &amp; Students</button>
-                  <button class="demo-pick" type="button" onclick="pickDemo(this)">🌱 Sustainable Tech</button>
-                  <button class="demo-pick" type="button" onclick="pickDemo(this)">🚀 Future of Remote Work</button>
-                </div>
-                <textarea id="topic-input" placeholder="e.g. How AI Agents are Transforming Business Automation" required></textarea>
-                <div class="input-meta" id="input-meta">
-                  <span id="char-count">0 characters</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Content Types</label>
-                <div class="checkbox-group">
-                  <label class="checkbox-item"><input type="checkbox" id="chk-blog" checked /> 📝 Blog Post</label>
-                  <label class="checkbox-item"><input type="checkbox" id="chk-social" checked /> 📱 Social Media</label>
-                  <label class="checkbox-item"><input type="checkbox" id="chk-email" checked /> 📧 Email Newsletter</label>
-                  <label class="checkbox-item"><input type="checkbox" id="chk-video" checked /> 🎥 Video Script</label>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div class="form-group">
-                <label for="audience-select">Target Audience</label>
-                <select id="audience-select">
-                  <option>Tech Professionals</option>
-                  <option>Business Leaders</option>
-                  <option>Students</option>
-                  <option>General Public</option>
-                  <option>Developers</option>
-                  <option>Marketers</option>
-                  <option>Entrepreneurs</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="tone-select">Tone</label>
-                <select id="tone-select">
-                  <option>Professional</option>
-                  <option>Casual</option>
-                  <option>Educational</option>
-                  <option>Entertaining</option>
-                  <option>Persuasive</option>
-                  <option>Inspirational</option>
-                  <option>Conversational</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="language-select">Language</label>
-                <select id="language-select">
-                  <option>English</option>
-                  <option>Spanish</option>
-                  <option>French</option>
-                  <option>German</option>
-                  <option>Hindi</option>
-                  <option>Portuguese</option>
-                  <option>Japanese</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="word-count-select">Blog Word Count Target</label>
-                <select id="word-count-select">
-                  <option value="800">Short (~800 words)</option>
-                  <option value="1500" selected>Medium (~1500 words)</option>
-                  <option value="2500">Long (~2500 words)</option>
-                  <option value="4000">In-Depth (~4000 words)</option>
-                </select>
-              </div>
-              <button type="submit" class="btn-generate" id="btn-generate" onclick="handleGenerate()">
-                <span class="btn-text">🚀 Generate Content Package</span>
-                <span class="spinner"></span>
-              </button>
-            </div>
+        <div class="node-row">
+          <div class="ai-node" id="node-research">
+            <span class="node-icon">🔍</span>
+            <span class="node-name">Analyst</span>
           </div>
-        </form>
-
-        <!-- Pipeline -->
-        <div class="pipeline" id="pipeline">
-          <h3>Agent Pipeline — Working...</h3>
-          <div class="pipeline-steps">
-            <div class="pipeline-step" data-step="research"><div class="step-dot">🔍</div><span class="step-label">Research</span></div>
-            <div class="pipeline-connector" data-after="research"></div>
-            <div class="pipeline-step" data-step="blog"><div class="step-dot">✍️</div><span class="step-label">Blog</span></div>
-            <div class="pipeline-connector" data-after="blog"></div>
-            <div class="pipeline-step" data-step="social"><div class="step-dot">📱</div><span class="step-label">Social</span></div>
-            <div class="pipeline-connector" data-after="social"></div>
-            <div class="pipeline-step" data-step="email"><div class="step-dot">📧</div><span class="step-label">Email</span></div>
-            <div class="pipeline-connector" data-after="email"></div>
-            <div class="pipeline-step" data-step="video"><div class="step-dot">🎥</div><span class="step-label">Video</span></div>
+          <div class="ai-node" id="node-blog">
+            <span class="node-icon">📝</span>
+            <span class="node-name">Writer</span>
           </div>
-          <div class="elapsed-timer" id="elapsed-timer">⏱ Generating for <span id="elapsed-seconds">0</span>s</div>
-          <div class="activity-feed" id="activity-feed"></div>
+          <div class="ai-node" id="node-social">
+            <span class="node-icon">📱</span>
+            <span class="node-name">Social</span>
+          </div>
+          <div class="ai-node" id="node-email">
+            <span class="node-icon">📧</span>
+            <span class="node-name">Email</span>
+          </div>
+          <div class="ai-node" id="node-video">
+            <span class="node-icon">🎥</span>
+            <span class="node-name">Video</span>
+          </div>
+        </div>
+        
+        <div class="terminal-output" id="activity-feed">
+          <div class="log-line"><span class="log-time">[System]</span> Neural orchestration layer initialized and awaiting prompt...</div>
         </div>
       </div>
 
-      <!-- Results -->
-      <div id="results-anchor"></div>
-      <div class="results-section" id="results-section">
-        <div class="results-panel">
-          <div class="results-header">
-            <div>
-              <h3>✅ Content Package Ready</h3>
-              <div class="result-badges" id="result-badges"></div>
-            </div>
-            <div class="results-actions">
-              <button class="btn-icon" id="btn-copy" onclick="copyActive()">📋 Copy</button>
-              <button class="btn-icon" id="btn-download-json" onclick="downloadJSON()">📥 JSON</button>
-              <button class="btn-icon" id="btn-download-md" onclick="downloadMarkdown()">📄 Markdown</button>
-              <button class="btn-icon" id="btn-download-txt" onclick="downloadTXT()">📃 Text</button>
-            </div>
-          </div>
-          <!-- Content Stats Bar -->
-          <div class="content-stats-bar" id="content-stats-bar">
-            <div class="cs-stat">
-              <span class="cs-icon">📝</span>
-              <span class="cs-value" id="cs-words">—</span>
-              <span class="cs-label">Total Words</span>
-            </div>
-            <div class="cs-stat">
-              <span class="cs-icon">🔤</span>
-              <span class="cs-value" id="cs-chars">—</span>
-              <span class="cs-label">Characters</span>
-            </div>
-            <div class="cs-stat">
-              <span class="cs-icon">📖</span>
-              <span class="cs-value" id="cs-reading">—</span>
-              <span class="cs-label">Reading Time</span>
-            </div>
-            <div class="cs-stat">
-              <span class="cs-icon">🤖</span>
-              <span class="cs-value" id="cs-agents">5</span>
-              <span class="cs-label">Agents Used</span>
-            </div>
-          </div>
+      <!-- Output Rendered -->
+      <div class="glass-panel" id="results-panel" style="display:none; min-height: 400px; animation: fadeUp 0.5s ease;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:1rem; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
           <div class="tabs" id="tabs">
             <button class="tab-btn active" data-tab="tab-blog">📝 Blog</button>
             <button class="tab-btn" data-tab="tab-social">📱 Social</button>
             <button class="tab-btn" data-tab="tab-email">📧 Email</button>
             <button class="tab-btn" data-tab="tab-video">🎥 Video</button>
             <button class="tab-btn" data-tab="tab-research">🔍 Research</button>
-            <button class="tab-btn" data-tab="tab-raw">🗂️ Raw</button>
           </div>
-          <div class="tab-content active" id="tab-blog"><div class="rendered-content" id="out-blog"></div></div>
-          <div class="tab-content" id="tab-social"><div class="rendered-content" id="out-social"></div></div>
-          <div class="tab-content" id="tab-email"><div class="rendered-content" id="out-email"></div></div>
-          <div class="tab-content" id="tab-video"><div class="rendered-content" id="out-video"></div></div>
-          <div class="tab-content" id="tab-research"><div class="rendered-content" id="out-research"></div></div>
-          <div class="tab-content" id="tab-raw"><pre id="out-raw"></pre></div>
+          <div class="export-row" style="margin-top:0;">
+            <button class="btn-export" onclick="copyActive()">Copy</button>
+            <button class="btn-export" onclick="downloadMarkdown()">Download .MD</button>
+            <button class="btn-export" onclick="downloadJSON()">Raw JSON</button>
+          </div>
         </div>
+        
+        <div class="tab-content active" id="tab-blog"><div class="rendered-content" id="out-blog"></div></div>
+        <div class="tab-content" id="tab-social"><div class="rendered-content" id="out-social"></div></div>
+        <div class="tab-content" id="tab-email"><div class="rendered-content" id="out-email"></div></div>
+        <div class="tab-content" id="tab-video"><div class="rendered-content" id="out-video"></div></div>
+        <div class="tab-content" id="tab-research"><div class="rendered-content" id="out-research"></div></div>
       </div>
+
     </div>
   </section>
 
-  <!-- ============ HISTORY ============ -->
-  <section class="section history-section" id="history">
-    <div class="container">
-      <div class="section-header fade-up">
-        <h2>Generation History</h2>
-        <p>Your previously generated content packages, stored locally in your browser.</p>
-      </div>
-      <div class="history-controls fade-up">
-        <button class="btn-icon" id="btn-clear-history" onclick="clearHistory()">🗑️ Clear All</button>
-      </div>
-      <div class="history-grid fade-up" id="history-grid">
-        <div class="history-empty" id="history-empty">
-          <span class="history-empty-icon">📭</span>
-          <p>No generations yet. Create your first content package above!</p>
-        </div>
-      </div>
+  <!-- History Section -->
+  <section id="history" class="history-section fade-up delay-2">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="font-family:var(--font-display); font-size:1.8rem;">Content History</h2>
+      <button class="btn-export" onclick="clearHistory()" style="color:#ef4444; border-color:rgba(239,68,68,0.3)">Clear Database</button>
+    </div>
+    <div class="history-grid" id="history-grid">
+      <!-- Injected via JS -->
     </div>
   </section>
 
-  <!-- ============ FOOTER ============ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="nav-logo">
-            <span class="logo-icon">🎬</span>
-            Content Studio
-          </div>
-          <p>AI agents collaborating to generate content across every platform.</p>
-          <div class="tech-badges">
-            <span class="tech-badge">CrewAI</span>
-            <span class="tech-badge">Groq</span>
-            <span class="tech-badge">Flask</span>
-            <span class="tech-badge">Python</span>
-          </div>
-        </div>
-        <div class="footer-links">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="https://docs.crewai.com" target="_blank">CrewAI Docs</a></li>
-            <li><a href="https://groq.com" target="_blank">Groq API</a></li>
-            <li><a href="https://huggingface.co" target="_blank">Hugging Face</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h4>Navigate</h4>
-          <ul>
-            <li><a href="#how">How It Works</a></li>
-            <li><a href="#agents">Agents</a></li>
-            <li><a href="#generate">Generate</a></li>
-            <li><a href="#history">History</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        &copy; 2026 Content Studio &middot; Multi-Agent AI Content Generation
-      </div>
-    </div>
-  </footer>
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
 
   <script src="/static/script.js"></script>
 </body>

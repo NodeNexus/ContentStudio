@@ -219,30 +219,26 @@ function renderMarkdown(text) {
 // PIPELINE HELPERS
 // ==========================================
 const STEPS = ['research', 'blog', 'social', 'email', 'video'];
-const AGENT_NAMES = { research: 'Research Analyst', blog: 'Blog Writer', social: 'Social Media Pro', email: 'Email Marketer', video: 'Video Scriptwriter' };
+const AGENT_NAMES = { research: 'Analyst', blog: 'Writer', social: 'Social Pro', email: 'Email Expert', video: 'Video Scriptwriter' };
 
 function resetPipeline() {
-  document.querySelectorAll('.pipeline-step').forEach((s) => s.classList.remove('active', 'done'));
-  document.querySelectorAll('.pipeline-connector').forEach((c) => c.classList.remove('done'));
-  document.querySelectorAll('.agent-card').forEach((c) => c.classList.remove('working', 'done-status'));
+  document.querySelectorAll('.ai-node').forEach((n) => n.classList.remove('active', 'done'));
+  const flow = document.getElementById('pipeline-flow');
+  if (flow) flow.style.width = '0%';
   const feed = document.getElementById('activity-feed');
-  if (feed) { feed.innerHTML = ''; feed.classList.remove('active'); }
+  if (feed) feed.innerHTML = '<div class="log-line"><span class="log-time">[System]</span> Neural orchestration layer initialized...</div>';
 }
 
 function activateStep(index) {
-  const step = document.querySelector(`.pipeline-step[data-step="${STEPS[index]}"]`);
-  if (step) step.classList.add('active');
-  const card = document.querySelector(`.agent-card[data-agent="${STEPS[index]}"]`);
-  if (card) card.classList.add('working');
+  const node = document.getElementById(`node-${STEPS[index]}`);
+  if (node) node.classList.add('active');
+  const flow = document.getElementById('pipeline-flow');
+  if (flow) flow.style.width = `${(index / (STEPS.length - 1)) * 100}%`;
 }
 
 function completeStep(index) {
-  const step = document.querySelector(`.pipeline-step[data-step="${STEPS[index]}"]`);
-  if (step) { step.classList.remove('active'); step.classList.add('done'); }
-  const conn = document.querySelector(`.pipeline-connector[data-after="${STEPS[index]}"]`);
-  if (conn) conn.classList.add('done');
-  const card = document.querySelector(`.agent-card[data-agent="${STEPS[index]}"]`);
-  if (card) { card.classList.remove('working'); card.classList.add('done-status'); }
+  const node = document.getElementById(`node-${STEPS[index]}`);
+  if (node) { node.classList.remove('active'); node.classList.add('done'); }
 }
 
 // ==========================================
@@ -259,7 +255,6 @@ const AGENT_LOGS = {
 function addLogLine(agent, message) {
   const feed = document.getElementById('activity-feed');
   if (!feed) return;
-  feed.classList.add('active');
   const line = document.createElement('div');
   line.className = 'log-line';
   const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -283,8 +278,9 @@ async function animatePipeline() {
 
 function finishPipeline() {
   STEPS.forEach((_, i) => completeStep(i));
-  const h = document.querySelector('#pipeline h3');
-  if (h) h.textContent = 'Agent Pipeline — Complete ✅';
+  const flow = document.getElementById('pipeline-flow');
+  if (flow) flow.style.width = '100%';
+  addLogLine('System', 'Pipeline orchestration complete. Output ready.');
 }
 
 // ==========================================
@@ -520,14 +516,16 @@ async function handleGenerate() {
   };
 
   btn.classList.add('loading'); btn.disabled = true;
-  panel.classList.add('generating');
-  resultsSection.classList.remove('active');
-  document.getElementById('result-badges').innerHTML = '';
+  btn.textContent = 'Orchestrating Agents...';
+  
+  const resultsPanel = document.getElementById('results-panel');
+  if (resultsPanel) {
+    resultsPanel.style.display = 'none';
+    resultsPanel.classList.remove('active');
+  }
+
   resetPipeline();
-  pipeline.classList.add('active');
   showShimmers();
-  const pipelineH3 = document.querySelector('#pipeline h3');
-  if (pipelineH3) pipelineH3.textContent = 'Agent Pipeline — Working...';
   showToast('🚀 Agents are generating your content...', 'info');
   startTimer();
 
@@ -554,18 +552,18 @@ async function handleGenerate() {
     document.getElementById('out-raw').textContent = JSON.stringify(data, null, 2);
 
     updateContentStats(c);
-    resultsSection.classList.add('active');
-    fetchAndRenderHistory(); // Refresh from DB instead of localStorage
+    resultsPanel.style.display = 'block';
+    resultsPanel.classList.add('active');
+    fetchAndRenderHistory(); 
     showToast('✅ Content package generated successfully!', 'success');
-    setTimeout(() => smoothScrollTo('#results-anchor'), 300);
+    setTimeout(() => smoothScrollTo('#results-panel'), 300);
   } catch (err) {
-    stopTimer(); finishPipeline(); clearShimmers();
-    const pt = document.querySelector('#pipeline h3');
-    if (pt) pt.textContent = '❌ Error — ' + err.message;
+    finishPipeline(); clearShimmers();
+    addLogLine('Error', err.message);
     showToast('❌ ' + err.message, 'error');
   } finally {
     btn.classList.remove('loading'); btn.disabled = false;
-    panel.classList.remove('generating');
+    btn.textContent = 'Generate Content Package';
   }
 }
 
