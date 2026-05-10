@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 .env
 *.json
+*.db
 !render.yaml
+.DS_Store
 .DS_Store

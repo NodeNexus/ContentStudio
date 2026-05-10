@@ -419,35 +419,33 @@ function updateContentStats(content) {
 }
 
 // ==========================================
-// HISTORY (localStorage)
+// HISTORY (Database)
 // ==========================================
-const HISTORY_KEY = 'contentstudio_history';
+let currentHistory = [];
 
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
-}
-
-function saveToHistory(data) {
-  const hist = getHistory();
-  hist.unshift({ id: Date.now(), topic: data.topic, audience: data.audience, tone: data.tone,
-    generated_at: data.generated_at, content: data.content });
-  if (hist.length > 20) hist.length = 20;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
-  renderHistory();
-}
-
-function renderHistory() {
+async function fetchAndRenderHistory() {
   const grid = document.getElementById('history-grid');
-  const empty = document.getElementById('history-empty');
-  const hist = getHistory();
+  grid.innerHTML = '<div class="shimmer-block"></div>'.repeat(3);
+  try {
+    const res = await fetch('/api/history');
+    if (!res.ok) throw new Error('Failed to load');
+    currentHistory = await res.json();
+    renderHistoryCards();
+  } catch (err) {
+    grid.innerHTML = '<p style="color:var(--text-muted)">Failed to load history from database.</p>';
+  }
+}
+
+function renderHistoryCards() {
+  const grid = document.getElementById('history-grid');
   grid.innerHTML = '';
-  if (hist.length === 0) {
+  if (currentHistory.length === 0) {
     grid.innerHTML = `<div class="history-empty" id="history-empty">
       <span class="history-empty-icon">📭</span>
       <p>No generations yet. Create your first content package above!</p></div>`;
     return;
   }
-  hist.forEach((item) => {
+  currentHistory.forEach((item) => {
     const card = document.createElement('div');
     card.className = 'history-card';
     const date = new Date(item.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -479,15 +477,19 @@ function loadFromHistory(item) {
   showToast('📂 Loaded from history: ' + item.topic, 'info');
 }
 
-function clearHistory() {
+async function clearHistory() {
   if (!confirm('Clear all generation history?')) return;
-  localStorage.removeItem(HISTORY_KEY);
-  renderHistory();
-  showToast('🗑️ History cleared', 'info');
+  try {
+    await fetch('/api/history', { method: 'DELETE' });
+    fetchAndRenderHistory();
+    showToast('🗑️ History cleared from database', 'info');
+  } catch (err) {
+    showToast('❌ Failed to clear history', 'error');
+  }
 }
 
 // Init history on load
-renderHistory();
+fetchAndRenderHistory();
 
 // ==========================================
 // MAIN GENERATE HANDLER
@@ -553,7 +555,7 @@ async function handleGenerate() {
 
     updateContentStats(c);
     resultsSection.classList.add('active');
-    saveToHistory(data);
+    fetchAndRenderHistory(); // Refresh from DB instead of localStorage
     showToast('✅ Content package generated successfully!', 'success');
     setTimeout(() => smoothScrollTo('#results-anchor'), 300);
   } catch (err) {
